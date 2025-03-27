@@ -253,8 +253,7 @@ public:
         //        DATADUMP((std::string("dump_301")+std::to_string(_time_origin)).c_str());
         //    }
         //}
-
-//#ifdef HARD_DEBUG
+#ifdef HARD_DEBUG
         if (_n_ptcl>400) {
             std::cerr<<"Large cluster, n_ptcl="<<_n_ptcl<<" n_group="<<_n_group<<std::endl;
             std::pair<PS::S32,PS::F64> r_search_max={-1,0.0};
@@ -268,7 +267,7 @@ public:
             ptcl_origin[r_search_max.first].print(std::cerr);
             std::cerr<<std::endl;
         }
-//#endif
+#endif
 
         // prepare initial groups with artificial particles
         PS::S32 adr_first_ptcl[_n_group+1];
@@ -735,6 +734,29 @@ public:
 #ifdef HARD_DUMP
                 if (h4_int.profile.ar_step_count>manager->ar_manager.step_count_max&&!dump_flag) {
                     std::cerr<<"Large H4-AR step cluster found (dump): step: "<<h4_int.profile.ar_step_count<<std::endl;
+#ifdef WW_HARD_DEBUG
+                    for (PS::S32 i=0; i<h4_int.getNGroup(); i++) {
+                        const PS::S32 k= group_index[i];
+                        auto& groupk = h4_int.groups[k];
+                        auto& bink = groupk.info.getBinaryTreeRoot();
+                        std::cerr<<"Group k:"<<std::setw(2)<<k
+                                <<" N_member: "<<std::setw(4)<<groupk.particles.getSize()
+                                <<" step: "<<std::setw(12)<<groupk.profile.step_count_sum
+                                <<" step(tsyn): "<<std::setw(10)<<groupk.profile.step_count_tsyn_sum
+                    //                         <<" step(sum): "<<std::setw(12)<<h4_int.profile.ar_step_count
+                    //                         <<" step_tsyn(sum): "<<std::setw(12)<<h4_int.profile.ar_step_count_tsyn
+                                <<" Soft_Pert: "<<std::setw(20)<<groupk.perturber.soft_pert_min
+                                <<" Pert_In: "<<std::setw(20)<<bink.slowdown.getPertIn()
+                                <<" Pert_Out: "<<std::setw(20)<<bink.slowdown.getPertOut()
+                                <<" SD: "<<std::setw(20)<<bink.slowdown.getSlowDownFactor()
+                                <<" SD(org): "<<std::setw(20)<<bink.slowdown.getSlowDownFactorOrigin()
+                                <<" semi: "<<std::setw(20)<<bink.semi
+                                <<" ecc: "<<std::setw(20)<<bink.ecc
+                                <<" period: "<<std::setw(20)<<bink.period
+                                <<" NB: "<<std::setw(4)<<groupk.perturber.neighbor_address.getSize()
+                                <<std::endl;
+                    }
+#endif
                     DATADUMP("dump_large_step");
                     dump_flag=true;
                 } 
@@ -783,6 +805,12 @@ public:
                     h4_int.printStepHist();
                 }
 #endif
+// #if defined(WW_HARD_DEBUG) && (!defined(HARD_DEBUG_PRINT))
+//                 auto& h4_manager = manager->h4_manager;
+//                 if (fmod(h4_int.getTimeInt(), h4_manager.step.getDtMax())==0.0) {
+//                     h4_int.printStepHist();
+//                 }
+// #endif
             }
 
         }
@@ -1068,7 +1096,7 @@ public:
             }
 #endif
 
-#ifdef AR_DEBUG_PRINT
+#if defined(AR_DEBUG_PRINT)
             for (PS::S32 i=0; i<h4_int.getNGroup(); i++) {
                 const PS::S32 k= group_index[i];
                 auto& groupk = h4_int.groups[k];
