@@ -16,7 +16,8 @@ orb_mode=@with_orbit@
 
 CXXFLAGS=@CXXFLAGS@
 
-TARGET=build/@PROG_NAME@ build/petar.hard.debug build/petar.format.transfer
+PETAR_TARGET ?= build/@PROG_NAME@
+TARGET=$(PETAR_TARGET) build/petar.hard.debug build/petar.format.transfer
 all: $(TARGET)
 
 
@@ -226,7 +227,7 @@ SRC = main.cc ${shell ls ./src/*.hpp}
 build:
 	[ -d build ] || mkdir build
 
-build/@PROG_NAME@:  $(SRC) $(OBJS) $(LIBFILES) |build
+$(PETAR_TARGET):  $(SRC) $(OBJS) $(LIBFILES) |build
 	$(CXX) $(PETAR_INCLUDE) $(OPTFLAGS) $(CXXFLAGS) $(FDPSFLAGS) $(MT_FLAGS) $(DEBFLAGS) -o $@ $< $(OBJS) $(CXXLIBS)
 
 SIMD_DEBFLAGS += -DRSQRT_NR_EPJ_X2
@@ -288,4 +289,3 @@ install: $(TARGET) SE_INSTALL EXT_INSTALL install_script_tool
 
 clean: SE_CLEAN EXT_CLEAN
 	rm -f $(TARGET) build/*.o 
-

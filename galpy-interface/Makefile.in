@@ -31,10 +31,10 @@ petar.galpy: galpy_test.cxx libgalpy.a galpy_interface.h
 	$(CXX) $(CXXFLAGS) @GSL_CFLAGS@ $(GALPY_INCLUDE) $< -o $@ -L./ -lgalpy @GSL_LIBS@
 
 petar.galpy.help: galpy_help.py
-	ln -sf galpy_help.py petar.galpy.help
+	cp -f $< $@
 
 petar.galpy.pot.movie: galpy_pot_movie.py
-	ln -sf galpy_pot_movie.py petar.galpy.pot.movie
+	cp -f $< $@
 
 install:
 	install -d @prefix@/bin/
