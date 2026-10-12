@@ -569,7 +569,9 @@ public:
         // count used options
         opt_used ++;
         //std::cout<<"Opt used:"<<opt_used<<std::endl;
-        if (opt_used<argc) {
+        // detect the input data filename: only when there are unused arguments
+        // and the last one does not look like an option or a negative number
+        if (opt_used<argc && argv[argc-1][0] != '-') { //Allow for negative parameters
             fname_inp.value =argv[argc-1];
             if(print_flag) std::cout<<"Reading data file name: "<<fname_inp.value<<std::endl;
         }
@@ -1094,6 +1096,9 @@ public:
 #endif        
 
         stat.pcm.vel += dv;
+#ifdef RECORD_CM_IN_HEADER
+        FrameVelocity::vel = stat.pcm.vel;
+#endif
         for (int i=0; i<stat.n_all_loc; i++) system_soft[i].vel -= dv;
 
         //auto& adr = search_cluster.getAdrSysOneCluster();
@@ -1423,6 +1428,9 @@ public:
         ////// integrater one cluster
         system_hard_one_cluster.initializeForOneCluster(search_cluster.getAdrSysOneCluster().size());
         system_hard_one_cluster.setPtclForOneClusterOMP(system_soft, search_cluster.getAdrSysOneCluster());
+#ifdef RECORD_CM_IN_HEADER
+        FrameVelocity::vel = stat.pcm.vel;
+#endif
         system_hard_one_cluster.driveForOneClusterOMP(_dt_drift);
         //system_hard_one_cluster.writeBackPtclForOneClusterOMP(system_soft, search_cluster.getAdrSysOneCluster());
         system_hard_one_cluster.writeBackPtclForOneClusterOMP(system_soft, mass_modify_list);
@@ -2263,6 +2271,9 @@ public:
                     remove_list_thx[ith].push_back(i);
                     PS::F64 dpot = pi.mass*pi.pot_tot;
                     PS::F64 dkin = 0.5*pi.mass*(pi.vel*pi.vel);
+#ifdef RECORD_CM_IN_HEADER
+                    dkin -= calcDEKinFrameShift(0.0, pi.vel, pi.mass, pi.vel);
+#endif
                     PS::F64 eloss = dpot + dkin;
                     stat.energy.etot_ref -= eloss;
                     stat.energy.de_change_cum -= eloss;
@@ -2785,6 +2796,9 @@ public:
 #endif
         stat.pcm.pos = file_header.pos_offset;
         stat.pcm.vel = file_header.vel_offset;
+#ifdef RECORD_CM_IN_HEADER
+        FrameVelocity::vel = stat.pcm.vel;
+#endif
         stat.pcm.is_center_shift_flag = true;
 #endif        
 
@@ -3719,6 +3733,9 @@ public:
                 if (modify_flag) {
                     auto& v = p.vel;
                     PS::F64 de_kin = 0.5*(p.mass*(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) - mbk*(vbk[0]*vbk[0]+vbk[1]*vbk[1]+vbk[2]*vbk[2]));
+#ifdef RECORD_CM_IN_HEADER
+                    de_kin += calcDEKinFrameShift(p.mass, v, mbk, vbk);
+#endif
                     stat.energy.de_sd_change_cum += de_kin;
                     stat.energy.de_sd_change_modify_single += de_kin;
                     stat.energy.de_change_cum += de_kin;
